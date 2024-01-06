@@ -10,7 +10,9 @@ pub fn deftype<T>(_x:T)->(&'static str,usize){
         let split = type_name::<T>().split("&");
         t = split.last().unwrap().trim_end();
     }
-    println!("{}",type_name::<T>());
+    else{
+        t = type_name::<T>().trim_end();
+    }
     match t{
         "u8"=>{return ("u8",size_of::<u8>())},
         "i8"=>{return ("i8",size_of::<i8>())},
@@ -20,6 +22,6 @@ pub fn deftype<T>(_x:T)->(&'static str,usize){
         "i32"=>{return ("i32",size_of::<i32>())},
         "char"=>{return ("char",size_of::<char>())},
         "String"=>{return ("String",size_of::<String>())},
-        _=>{return (panic!("Type non reconnu"))}
+        _=>{return (panic!("Type non reconnu"))}    // Mise en touche en cas de Type non référencé
      }   
 }
