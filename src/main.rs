@@ -1,46 +1,40 @@
 mod mem;
-use mem::MemoryManager;
 mod typ;
-use typ::deftype;
-fn main() {
-    // Test pour vérifier la viabilité du process
-    let mut ges = MemoryManager::new();
-    println!("Capacité du MemoryManager : {}",ges.in_use.capacity());
-    println!("Taille du MemoryManager : {}",ges.in_use.len());
-    println!("Capacité du Garbage : {}",ges.empty.capacity());
-    println!("Taille du Garbage : {}",ges.empty.len());
+use mem::MemManager;
+use typ::refine;
+
+// La main fonction ne sert qu'aux tests !!!
+fn main(){  
+    let mut manager = MemManager::new();
+    let mut p:*mut u8;
     {
-        let x = String::from("Ceci est un test, espèce de connasse de machine de merde.");
-        let x = (x.as_bytes(),deftype(x.clone()));
-        unsafe{
-            let _p = ges.add(x);
-        }
-        let y:u16 = 1519;
-        let y:(&[u8],(&str,usize)) =  (&y.to_ne_bytes(),(deftype(y)));
-        unsafe{
-            let _p = ges.add(y);
-        }
+        let string = String::from("Test 1 2 3 4 blablablablablablablabla type stréng de ouf&");
+        let size = string.as_bytes().len();
+        p = manager.add_st(string, size);
     }
-    for b in &mut ges.in_use{
-        unsafe{
-            if b.typ == "String" || b.typ == "char"{
-                println!("Adresse allouée ({}) : {:?} || Valeur : {:?}",b.size.size(),b.address,char::from(b.address.read()));  // Implémenter la lecture de donnée
-            }
-            else{
-                println!("Adresse allouée ({}) : {:?} || Valeur : {:?}",b.size.size(),b.address,b.address.read());
-            }
-            b.allocated = false;
-        }
+    println!("Adresse : {:?}",p);
+    let res = manager.take(p);
+    if res.is_ok(){
+        println!("{}",String::from_utf8_lossy(&res.unwrap()));
     }
-    ges.check_leaks();
-    println!("Capacité du Garbage : {}",ges.empty.capacity());
-    println!("Taille du Garbage : {}",ges.empty.len());
-    ges.clear();
-    println!("Capacité du MemoryManager : {}",ges.in_use.capacity());
-    println!("Taille du MemoryManager : {}",ges.in_use.len());
-    println!("Capacité du Garbage : {}",ges.empty.capacity());
-    println!("Taille du Garbage : {}",ges.empty.len());
-    
+    else{
+        println!("Votre adresse est inconnue");
+    }
+
+    {
+        let number:u16= 512;
+        let size = 2;
+        p = manager.add(&number.to_ne_bytes() as &[u8], size);
+    }
+    println!("Adresse : {:?}",p);
+    let res = manager.take(p);
+    if res.is_ok(){
+        println!("{}",refine::<u16>(res.unwrap()));
+    }
+    else{
+        println!("Votre adresse est inconnue");
+    }
 }
 
-// Implémenter la fonction read pour extraire la donnée stockée de son bloc
+
+// Concevoir une fonction d'adaptation aux données
